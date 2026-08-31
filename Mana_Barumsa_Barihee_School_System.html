@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="om">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mana Barumsaa – School Management System</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#1f2937}
+header{background:#174a7e;color:white;padding:16px 20px}
+header h1{margin:0;font-size:22px}.wrap{display:flex;min-height:calc(100vh - 68px)}
+nav{width:230px;background:#123b63;color:white;padding:15px;box-sizing:border-box}
+nav button{display:block;width:100%;padding:12px;margin:5px 0;background:transparent;color:white;border:0;text-align:left;border-radius:6px;cursor:pointer}
+nav button:hover,nav button.active{background:#1d5e99}
+main{flex:1;padding:20px;max-width:1200px}
+.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}
+.card{background:white;padding:18px;border-radius:10px;box-shadow:0 2px 7px #0001}
+.card b{font-size:26px;display:block;margin-top:8px}
+table{width:100%;border-collapse:collapse;background:white;margin-top:15px}
+th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}
+th{background:#eef3f8}
+input,select{padding:9px;border:1px solid #ccd3da;border-radius:6px;margin:4px}
+.btn{padding:9px 13px;border:0;border-radius:6px;background:#1769aa;color:white;cursor:pointer}
+.btn.danger{background:#b42318}.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.notice{padding:12px;background:#fff8db;border-left:4px solid #e0a100;border-radius:5px;margin:12px 0}
+@media(max-width:700px){nav{width:62px}nav button{font-size:0;text-align:center}nav button:first-letter{font-size:18px}main{padding:12px}}
+
+.login{position:fixed;inset:0;background:#eef2f6;display:flex;align-items:center;justify-content:center;z-index:10}
+.loginbox{width:min(390px,92%);background:white;padding:28px;border-radius:12px;box-shadow:0 5px 25px #0002}
+.loginbox h2{margin-top:0}.loginbox input,.loginbox select{width:100%;box-sizing:border-box;margin:7px 0}.loginbox .btn{width:100%;margin-top:8px}
+.userbar{float:right;font-size:13px}.logout{background:#b42318!important;margin-left:8px}
+
+</head>
+<body>
+<div id="login" class="login">
+ <div class="loginbox">
+  <h2>🔐 Seensa Sirnaa</h2>
+  <p><b>Mana Barumsa Barihee Sadarkaa 1ffaa</b></p>
+  <input id="loginUser" placeholder="Username" autocomplete="username">
+  <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+  <select id="loginRole"><option value="admin">Admin</option><option value="teacher">Barsiisaa</option><option value="student">Barataa</option></select>
+  <button class="btn" onclick="login()">Login</button>
+  <div id="loginMsg" style="color:#b42318;margin-top:8px"></div>
+  <small>Prototype: Admin = <b>admin</b> / <b>barihee123</b></small>
+ </div>
+</div>
+<header><h1>🏫 Mana Barumsa Barihee Sadarkaa 1ffaa — School Management System</h1><span class="userbar" id="userbar"></span></header>
+<div class="wrap">
+<nav id="nav">
+<button class="active" onclick="show('dashboard',this)">🏠 Dashboard</button>
+<button onclick="show('users',this)">👤 Users</button>
+<button onclick="show('teachers',this)">👨‍🏫 Barsiisota</button>
+<button onclick="show('students',this)">👨‍🎓 Barattoota</button>
+<button onclick="show('classes',this)">📚 Kutaa & Subject</button>
+<button onclick="show('attendanceT',this)">🕐 Attendance Barsiisaa</button>
+<button onclick="show('attendanceS',this)">🕐 Attendance Barataa</button>
+<button onclick="show('results',this)">📊 Bu'aa/Qabxii</button>
+<button onclick="show('reports',this)">📄 Reports</button>
+</nav>
+<main>
+<section id="dashboard" class="page active">
+<h2>Dashboard</h2>
+<div class="cards">
+<div class="card">Barsiisota<b id="teacherCount">0</b></div>
+<div class="card">Barattoota<b id="studentCount">0</b></div>
+<div class="card">Kutaa<b id="classCount">0</b></div>
+<div class="card">Attendance Har'aa<b id="attCount">0</b></div>
+</div>
+<div class="notice">Mana Barumsa Barihee — Kutaa 1 hanga 8. Kun prototype jalqabaa dha; version online keessatti database, login fi user roles itti dabalamu.</div>
+</section>
+
+
+<section id="users" class="page"><h2>👤 User Accounts</h2>
+<div class="notice">Admin qofatu account uumuu fi haquu danda'a.</div>
+<div class="toolbar"><input id="uname" placeholder="Username"><input id="upass" placeholder="Password"><select id="urole"><option>teacher</option><option>student</option></select><input id="ulink" placeholder="Maqaa namaa"><button class="btn" onclick="addUser()">+ User uumi</button></div>
+<table><thead><tr><th>Username</th><th>Role</th><th>Maqaa</th><th>Action</th></tr></thead><tbody id="userTable"></tbody></table></section>
+
+<section id="teachers" class="page"><h2>👨‍🏫 Barsiisota</h2>
+<div class="toolbar"><input id="tname" placeholder="Maqaa barsiisaa"><input id="tsub" placeholder="Subject"><button class="btn" onclick="addTeacher()">+ Galmeessi</button></div>
+<table><thead><tr><th>#</th><th>Maqaa</th><th>Subject</th><th>Action</th></tr></thead><tbody id="teacherTable"></tbody></table></section>
+
+<section id="students" class="page"><h2>👨‍🎓 Barattoota</h2>
+<div class="toolbar"><input id="sname" placeholder="Maqaa barataa"><input id="sgrade" placeholder="Kutaa (fkn 8A)"><button class="btn" onclick="addStudent()">+ Galmeessi</button></div>
+<table><thead><tr><th>#</th><th>Maqaa</th><th>Kutaa</th><th>Action</th></tr></thead><tbody id="studentTable"></tbody></table></section>
+
+<section id="classes" class="page"><h2>📚 Kutaa & Subject</h2>
+<div class="toolbar"><input id="cname" placeholder="Kutaa (fkn 8A)"><input id="csub" placeholder="Subject"><button class="btn" onclick="addClass()">+ Dabali</button></div>
+<table><thead><tr><th>#</th><th>Kutaa</th><th>Subject</th><th>Action</th></tr></thead><tbody id="classTable"></tbody></table></section>
+
+<section id="attendanceT" class="page"><h2>🕐 Attendance Barsiisaa</h2>
+<div class="toolbar"><input id="atTeacher" placeholder="Maqaa barsiisaa"><select id="atTstatus"><option>Present</option><option>Absent</option><option>Late</option></select><button class="btn" onclick="addAttendance('teacher')">Galmeessi</button></div>
+<table><thead><tr><th>Guyyaa</th><th>Barsiisaa</th><th>Status</th></tr></thead><tbody id="attTeacherTable"></tbody></table></section>
+
+<section id="attendanceS" class="page"><h2>🕐 Attendance Barataa</h2>
+<div class="toolbar"><input id="atStudent" placeholder="Maqaa barataa"><select id="atSstatus"><option>Present</option><option>Absent</option><option>Late</option></select><button class="btn" onclick="addAttendance('student')">Galmeessi</button></div>
+<table><thead><tr><th>Guyyaa</th><th>Barataa</th><th>Status</th></tr></thead><tbody id="attStudentTable"></tbody></table></section>
+
+<section id="results" class="page"><h2>📊 Bu'aa / Qabxii</h2>
+<div class="toolbar"><input id="rstudent" placeholder="Maqaa barataa"><input id="rsubject" placeholder="Subject"><input id="rmark" type="number" min="0" max="100" placeholder="Qabxii"><button class="btn" onclick="addResult()">Galmeessi</button></div>
+<table><thead><tr><th>Barataa</th><th>Subject</th><th>Qabxii</th><th>Grade</th></tr></thead><tbody id="resultTable"></tbody></table></section>
+
+<section id="reports" class="page"><h2>📄 Reports</h2>
+<p>Gabaasa bu'aa fi attendance:</p>
+<button class="btn" onclick="report()">Generate Summary</button>
+<div id="reportBox" class="card" style="margin-top:15px"></div>
+</section>
+</main></div>
+<script>
+const key='schoolDemoV1';
+let db=JSON.parse(localStorage.getItem(key)||'{"teachers":[],"students":[],"classes":[],"attendance":[],"results":[],"users":[]}');
+function save(){localStorage.setItem(key,JSON.stringify(db));render()}
+function show(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
+function addTeacher(){let n=tname.value.trim(),s=tsub.value.trim();if(!n)return;db.teachers.push({n,s});tname.value='';tsub.value='';save()}
+function addStudent(){let n=sname.value.trim(),g=sgrade.value.trim();if(!n)return;db.students.push({n,g});sname.value='';sgrade.value='';save()}
+function addClass(){let n=cname.value.trim(),s=csub.value.trim();if(!n)return;db.classes.push({n,s});cname.value='';csub.value='';save()}
+function del(type,i){db[type].splice(i,1);save()}
+function addAttendance(type){let n=(type==='teacher'?atTeacher:atStudent).value.trim();let st=(type==='teacher'?atTstatus:atSstatus).value;if(!n)return;db.attendance.push({type,n,st,date:new Date().toLocaleDateString()});(type==='teacher'?atTeacher:atStudent).value='';save()}
+function addResult(){let n=rstudent.value.trim(),s=rsubject.value.trim(),m=Number(rmark.value);if(!n||!s||isNaN(m))return;db.results.push({n,s,m});rstudent.value='';rsubject.value='';rmark.value='';save()}
+function grade(m){return m>=90?'A+':m>=80?'A':m>=70?'B':m>=60?'C':m>=50?'D':'F'}
+function rows(id,arr,fn){document.getElementById(id).innerHTML=arr.map(fn).join('')}
+
+function login(){
+ const u=loginUser.value.trim(), p=loginPass.value, role=loginRole.value;
+ if(role==='admin' && u==='admin' && p==='barihee123'){sessionStorage.setItem('schoolRole','admin');startApp();return}
+ const found=(db.users||[]).find(x=>x.u===u&&x.p===p&&x.role===role);
+ if(found){sessionStorage.setItem('schoolRole',role);sessionStorage.setItem('schoolUser',u);startApp();return}
+ loginMsg.textContent='Username ykn password sirrii miti.';
+}
+function startApp(){
+ login.style.display='none';
+ const role=sessionStorage.getItem('schoolRole')||'admin';
+ userbar.innerHTML=`${role==='admin'?'👑 Admin':role==='teacher'?'👨‍🏫 Barsiisaa':'👨‍🎓 Barataa'} <button class="btn logout" onclick="logout()">Logout</button>`;
+ if(role!=='admin') document.querySelector('button[onclick*="users"]').style.display='none';
+}
+function logout(){sessionStorage.clear();location.reload()}
+function addUser(){
+ if(sessionStorage.getItem('schoolRole')!=='admin'){alert('Admin qofa!');return}
+ const u=uname.value.trim(),p=upass.value,r=urole.value,l=ulink.value.trim();if(!u||!p)return;
+ db.users=db.users||[];db.users.push({u,p,role:r,link:l});uname.value='';upass.value='';ulink.value='';save();
+}
+function render(){
+ rows('userTable',db.users||[],(x,i)=>`<tr><td>${x.u}</td><td>${x.role}</td><td>${x.link||''}</td><td><button class="btn danger" onclick="del('users',${i})">Haqu</button></td></tr>`);
+ teacherCount.textContent=db.teachers.length;studentCount.textContent=db.students.length;classCount.textContent=db.classes.length;attCount.textContent=db.attendance.filter(x=>x.date===new Date().toLocaleDateString()).length;
+ rows('teacherTable',db.teachers,(x,i)=>`<tr><td>${i+1}</td><td>${x.n}</td><td>${x.s}</td><td><button class="btn danger" onclick="del('teachers',${i})">Haqu</button></td></tr>`);
+ rows('studentTable',db.students,(x,i)=>`<tr><td>${i+1}</td><td>${x.n}</td><td>${x.g}</td><td><button class="btn danger" onclick="del('students',${i})">Haqu</button></td></tr>`);
+ rows('classTable',db.classes,(x,i)=>`<tr><td>${i+1}</td><td>${x.n}</td><td>${x.s}</td><td><button class="btn danger" onclick="del('classes',${i})">Haqu</button></td></tr>`);
+ rows('attTeacherTable',db.attendance.filter(x=>x.type==='teacher'),x=>`<tr><td>${x.date}</td><td>${x.n}</td><td>${x.st}</td></tr>`);
+ rows('attStudentTable',db.attendance.filter(x=>x.type==='student'),x=>`<tr><td>${x.date}</td><td>${x.n}</td><td>${x.st}</td></tr>`);
+ rows('resultTable',db.results,x=>`<tr><td>${x.n}</td><td>${x.s}</td><td>${x.m}</td><td>${grade(x.m)}</td></tr>`);
+}
+function report(){let a=db.attendance;let p=a.filter(x=>x.st==='Present').length,ab=a.filter(x=>x.st==='Absent').length,l=a.filter(x=>x.st==='Late').length;let avg=db.results.length?(db.results.reduce((z,x)=>z+x.m,0)/db.results.length).toFixed(2):0;reportBox.innerHTML=`<b>Summary</b><br>Barattoota: ${db.students.length}<br>Barsiisota: ${db.teachers.length}<br>Attendance — Present: ${p}, Absent: ${ab}, Late: ${l}<br>Average Result: ${avg}`;reportBox.scrollIntoView({behavior:'smooth'})}
+render();
+if(sessionStorage.getItem('schoolRole')) startApp();
+</script>
+</body>
+</html>
